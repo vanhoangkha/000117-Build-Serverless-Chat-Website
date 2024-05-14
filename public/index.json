@@ -1,0 +1,281 @@
+[
+{
+	"uri": "/2-static-s3/2.1-add-data/",
+	"title": "Adding static data to the website",
+	"tags": [],
+	"description": "",
+	"content": " At the interface of the created bucket Choose Upload Choose Add files Go to v2, Choose and drag and drop the file Choose Grant public-read access Choose I understand Choose Upload to upload the file to S3 Access the browser to confirm the json data files Path : ../1.json\nPath : ../2.json Path ../conversation.json "
+},
+{
+	"uri": "/",
+	"title": "Build a Complete serverless Chat Website",
+	"tags": [],
+	"description": "",
+	"content": "Build a Complete serverless Chat Website Overview Content Introduction and Preparation Static Chat Application with S3 Creating an API Use DynamoDB for storage Break up the monolith – Start build Complete App Add Identity to the application Optimization Setting up a CloudFront CDN Clear Resources "
+},
+{
+	"uri": "/6-identity/6.1-user-pool/",
+	"title": "Create a user pool",
+	"tags": [],
+	"description": "",
+	"content": " At AWS Console Choose Cognito At Cognito interface Choose Create user pool Choose User name Choose Email Choose Next Choose Cognito default Choose No MFA for this project Choose Email Only Choose Next Choose Next Choose Send email with Cognito Choose Next User pool name: ChatPool App client name: chatapp Only choose Read permission: email, email_verified Choose Create user pool "
+},
+{
+	"uri": "/5-break/5.1-api/",
+	"title": "Create API structure in API Gateway",
+	"tags": [],
+	"description": "",
+	"content": " At API Interface Choose Models Choose Create Name: ConversationsList Content type: application/json Model schema: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;object\u0026#34;, \u0026#34;properties\u0026#34;: { \u0026#34;id\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; }, \u0026#34;participants\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } }, \u0026#34;last\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;number\u0026#34;, \u0026#34;format\u0026#34;: \u0026#34;utc-millisec\u0026#34; } } } } Choose Create Choose /{proxy+} Choose Delete to create a new complete structure API Choose Delete Choose Create resourse Resource name: conversation Choose Create resource Then create next resource Resource path: /conversation/ Resource name: {id} Choose Create resource At Lambda Interface Choose Create function At function interface Function: Chat-Conversation-GET Runtime: Node.js 18.x Use an existing role Choose : Lambda-Role-ChatApp Choose Create fuction Copy code for this function and paste it import {DynamoDBClient, paginateQuery, QueryCommand} from \u0026#39;@aws-sdk/client-dynamodb\u0026#39;; const client = new DynamoDBClient({}); export const handler = async function (event) { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, IndexName: \u0026#39;Username-ConversationId-index\u0026#39;, Select: \u0026#39;ALL_PROJECTED_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;Username = :username\u0026#39;, ExpressionAttributeValues: {\u0026#39;:username\u0026#39;: {S: \u0026#39;Student\u0026#39;}} }); let conversationIds = []; for await (const page of paginator) { for (const item of page.Items) { conversationIds.push(item.ConversationId.S); } } let lastsPromise = loadConvosLast(conversationIds); let partsPromise = loadConvoParticpants(conversationIds); let lasts = await lastsPromise; let parts = await partsPromise; return conversationIds.map((id) =\u0026gt; { return { id: id, last: lasts[id], participants: parts[id] }; }); }; async function loadConvosLast(ids) { const queryResults = ids.map((id) =\u0026gt; client.send(new QueryCommand({ TableName: \u0026#39;Chat-Messages\u0026#39;, ProjectionExpression: \u0026#39;ConversationId, #T\u0026#39;, Limit: 1, ScanIndexForward: false, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeNames: {\u0026#39;#T\u0026#39;: \u0026#39;Timestamp\u0026#39;}, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }))); let result = new Map; for await (const qr of queryResults) { if (qr.Items.length === 1) { result[qr.Items[0].ConversationId.S] = Number(qr.Items[0].Timestamp.N); } } return result; } async function loadConvoParticpants(ids) { const queryResults = ids.map(async (id) =\u0026gt; { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, Select: \u0026#39;ALL_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }); let p = []; for await (const page of paginator) { for (const item of page.Items) { p.push(item.Username.S); } } return { id: id, participants: p }; }); let result = new Map; for await (const qr of queryResults) { result[qr.id] = qr.participants; } return result; } Choose Deploy Choose configure test event Choose Creat new event Event: TestConversation Event JSON: {} Choose Save Choose Test and check results At API interface Choose /conversations Choose Create method At method interface Method type: GET Integration type: Lambda function Choose Lambda function : Chat-Conversation-GET Choose Create method At API interface Choose Models Choose create model At models interface Name: ConversationsList Content type: application/json Model schema: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;object\u0026#34;, \u0026#34;properties\u0026#34;: { \u0026#34;id\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; }, \u0026#34;participants\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } }, \u0026#34;last\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;number\u0026#34;, \u0026#34;format\u0026#34;: \u0026#34;utc-millisec\u0026#34; } } } } Choose Create Choose GET in /conversations Choose Method response Choose Edit At Edit interface - Response body Content type: application/json Model: ConversationsList Choose Save Choose Test and check results with GET Choose /converation Choose Enable CORS Choose GET Choose Save "
+},
+{
+	"uri": "/4-dynamodb/4.1-tables/",
+	"title": "Create DynamoDB tables",
+	"tags": [],
+	"description": "",
+	"content": " At the AWS Console interface Choose DynamoDB Choose Create table At the DynamoDB Table interface Table name: Chat-Messages Partition key: ConversationId Sort key: Timestamp Choose Create table Choose create table to create the second table At the table creation interface Table name : Chat-Conversations Partition key: ConversationId Sort key: Username Scroll down and Choose Create global index At the GSI interface Partition key : User name Sort key: ConversationId Choose Create index Choose Create table "
+},
+{
+	"uri": "/3-api/3.1-policy/",
+	"title": "Creating a policy for the Lambda function",
+	"tags": [],
+	"description": "",
+	"content": " Access IAM At the IAM interface Choose Policies Choose Create policy At the Policy interface Choose service: S3 Choose Actions allowed: GetObject Choose Resource: Specific Add ARNs 4. At the ARN interface\nName bucket: chat-app-lab Object name: * Choose Add ARNs 5. Name the Policy\nPolicy name : S3-Access-ChatApp 6. Choose Create policy\n7. At the IAM interface\nChoose Roles Choose Create role 8. Choose AWS Service\n9. Choose Lambda service\nChoose Next 10. At Add permissions\nFind and Choose S3-Access-ChatApp Find and Choose AWSLambdaBasicExecutionRole Choose Next At Name, review and create Role name: Lambda-Role Choose Create role "
+},
+{
+	"uri": "/1-intro-prepare/",
+	"title": "Introduction and Preparation",
+	"tags": [],
+	"description": "",
+	"content": "Overall Our project is a chat application built on the AWS platform, combining technologies like Lambda, DynamoDB, and Cognito to create a powerful and secure chat experience. We started by setting up the website and integrating static data from Amazon S3.\nNext, we built an API using Lambda and API Gateway to manage dynamic data and user interactions. Using DynamoDB for data storage helps us build scalable and flexible applications. We also integrate user authentication and authorization by creating user pools in Cognito, ensuring security and efficient user management.\nFinally, optimization with CloudFront CDN enhances application performance and reliability. Thanks to this combination, we have created a powerful, flexible and secure chat application that provides the best user experience.\nContents Introduction Setup the website "
+},
+{
+	"uri": "/1-intro-prepare/1.1-intro/",
+	"title": "Introdution",
+	"tags": [],
+	"description": "",
+	"content": "\nLink Repository: https://github.com/HoangGuruu/ws2-chatapp.git\nS3 Amazon S3, also known as Simple Storage Service, is a powerful and flexible cloud storage service. In our project, we use S3 to store website static data and resources like images, CSS and JavaScript files. This helps us create a fast and high-performing website, with easy and affordable scalability.\nAPI Gateway Amazon API Gateway is a powerful API management service that allows us to easily create, manage, and deploy APIs to connect our applications to other services and users. In our project, API Gateway helps us build and manage API endpoints to access dynamic data from Lambda and DynamoDB.\nLambda AWS Lambda is a serverless compute service that allows us to run code without managing servers. We use Lambda in our projects to build small compute functions to handle business logic and access data in DynamoDB. This helps us optimize performance, flexibility and costs.\nDynamoDB Amazon DynamoDB is a flexible and automatically scalable NoSQL database service. In our project, we use DynamoDB to store dynamic data like chats and messages. With easy scalability and high performance, DynamoDB is ideal for dynamic data storage in our applications.\nCognito Amazon Cognito is a user authentication and authorization management service that helps us protect user information and manage access rights. In our project, we use Cognito to authenticate users, manage accounts, and control access to our APIs.\nCloudfront Amazon CloudFront is a CDN (Content Delivery Network) service managed by AWS that improves application performance and availability by delivering content to users from locations closest to them. In our project, we use CloudFront to deliver static data like images and CSS files to speed up page loading and improve user experience.\n"
+},
+{
+	"uri": "/2-static-s3/2.2-access-data/",
+	"title": "Accessing static data from javascript",
+	"tags": [],
+	"description": "",
+	"content": " Access the link Path: {s3_url}/chats.html Choose Brian to view the conversation data. Check the conversation data "
+},
+{
+	"uri": "/3-api/3.2-lambda/",
+	"title": "Code walkthrough of the first Lambda function",
+	"tags": [],
+	"description": "",
+	"content": " At AWS Console Choose Lambda At the create function interface Choose author from scratch Function name: Lambda-ChatApp-Proxy Choose Runtime: Nodejs 18.x Choose Create function Use the created role: Lambda-Role-ChatApp Enter the code for the function Copy the code and paste it into index.js import {GetObjectCommand, S3Client} from \u0026#39;@aws-sdk/client-s3\u0026#39;; const client = new S3Client({}); const bucket = \u0026#39;\u0026lt;your bucket name\u0026gt;\u0026#39;; export const handler = async function () { try { const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: \u0026#39;data/conversations.json\u0026#39; })); return done(null, JSON.parse(await response.Body.transformToString())); } catch (e) { return done(e); } }; function done(err, res) { if (err) { console.error(err); } return { statusCode: err ? \u0026#39;400\u0026#39; : \u0026#39;200\u0026#39;, body: err ? JSON.stringify(err) : JSON.stringify(res), headers: { \u0026#39;Content-Type\u0026#39;: \u0026#39;application/json\u0026#39;, \u0026#39;Access-Control-Allow-Origin\u0026#39;: \u0026#39;*\u0026#39; } }; } Choose Deploy "
+},
+{
+	"uri": "/4-dynamodb/4.2-sample-data/",
+	"title": "Create some sample data in DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": " Choose Chat-Messages Table Choose create item Choose Add new attribute ConversationId: 1 Timestamp: 123456789 Sender: Brian Message: Hello World Choose Create Item After creating the first item Choose Action Choose Edit item Change Sender: Frank Choose Create item At the create item interface for table: Chat-Conversations ConversationId: 1 Username: Brian Choose Create Item At the interface create item for table: Chat-Conversations ConversationId: 1 Username: Student Choose Create Item At the create item interface for the table: Chat-Conversations ConversationId: 2 Username: Frank Choose Create Item At the interface create item for table: - Chat-Conversations ConversationId: 1 Username: Student Choose Create Item "
+},
+{
+	"uri": "/5-break/5.2-lambda/",
+	"title": "Lambda functions for reading and writing messages",
+	"tags": [],
+	"description": "",
+	"content": " At Lambda function Choose Create function At Basic information Function name: Chat-Messages-GET Runtime: Node.js 18.x Use an existing role : Lambda-Role-ChatApp Choose Create function Copy code and paste it import {DynamoDBClient, paginateQuery} from \u0026#39;@aws-sdk/client-dynamodb\u0026#39;; const client = new DynamoDBClient({}); export const handler = async function (event) { let messages = []; const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Messages\u0026#39;, ProjectionExpression: \u0026#39;#T, Sender, Message\u0026#39;, ExpressionAttributeNames: {\u0026#39;#T\u0026#39;: \u0026#39;Timestamp\u0026#39;}, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: event.id}} }); for await (const page of paginator) { for (const message of page.Items) { messages.push({ sender: message.Sender.S, time: Number(message.Timestamp.N), message: message.Message.S }); } } return loadConversationDetail(event.id, messages); } async function loadConversationDetail(id, messages) { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, Select: \u0026#39;ALL_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }); let participants = []; for await (const page of paginator) { for (const item of page.Items) { participants.push(item.Username.S); } } return { id: id, participants: participants, last: messages.length \u0026gt; 0 ? messages[messages.length - 1].time : undefined, messages: messages } } Choose Deploy At Lambda function Choose Create function Function name: Chat-Messages-POÓT Runtime: Node.js 18.x Use an existing role : Lambda-Role-ChatApp Choose Create function Copy code and paste it import {DynamoDBClient, PutItemCommand} from \u0026#39;@aws-sdk/client-dynamodb\u0026#39;; const client = new DynamoDBClient({}); export const handler = async function (event) { await client.send(new PutItemCommand({ TableName: \u0026#39;Chat-Messages\u0026#39;, Item: { ConversationId: {S: event.id}, Timestamp: { N: \u0026#34;\u0026#34; + new Date().getTime() }, Message: {S: event.message}, Sender: {S: \u0026#39;Student\u0026#39;} } })); }; Choose Deploy 6. At API Interface\nChoose /{id} Choose Create method At Method details Method type: GET Integration type: Lambda function Choose lambda function: Chat-Messages-GET Choose create method At API Interface Choose /{id} Choose Create method At Method details Method type: POST Integration type: Lambda function Choose lambda function: Chat-Messages-POST Choose create method At API gateway Choose Models Choose Create models Name: Conversation Content type: application/json Model schema { \u0026#34;type\u0026#34;: \u0026#34;object\u0026#34;, \u0026#34;properties\u0026#34;: { \u0026#34;id\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; }, \u0026#34;participants\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } }, \u0026#34;last\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;number\u0026#34;, \u0026#34;format\u0026#34;: \u0026#34;utc-millisec\u0026#34; }, \u0026#34;messages\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;object\u0026#34;, \u0026#34;properties\u0026#34;: { \u0026#34;sender\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; }, \u0026#34;time\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;number\u0026#34;, \u0026#34;format\u0026#34;: \u0026#34;utc-millisec\u0026#34; }, \u0026#34;message\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } } } } } } Choose Create At API gateway Choose Models Choose Create models Name: newMessages Content type: application/json Model schema { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } Choose Create At API resource Choose GET in /{id} Choose Integration request Choose Edit Choose Mapping templates Choose Add mapping template Content type: application/json Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;id\u0026#34;: \u0026#34;$input.params(\u0026#39;id\u0026#39;)\u0026#34; } Choose Save Choose Test at GET in /{id} Test id: 1 Choose Test Check the results At API resource Choose GET in /{id} Choose Method response Choose Edit Update Response body Content type: application/json Model: Conversation Choose: Save At API resource Choose POST in /{id} Choose Integration request Choose Edit Choose Mapping templates Choose Add mapping template Content type: application/json Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;id\u0026#34;: \u0026#34;$input.params(\u0026#39;id\u0026#39;)\u0026#34;, \u0026#34;message\u0026#34;: \u0026#34;$inputRoot\u0026#34; } Choose Save At API resource Choose POST in /{id} Choose Method request Choose Edit Update Response body Content type: application/json Model: newMessage Choose: Save Choose Test at POST in /{id} id: 1 Request body: test message Choose Test Check the results At API resource Choose POST in /{id} Choose Method response Choose Create response At response details HTTP status code: 204 Choose: Save At API resource Choose POST in /{id} Choose Method response Choose Delete Response 200 Choose Delete At API resource Choose POST in /{id} Choose Integration response Choose Delete Default - response Choose Delete At API resource Choose POST in /{id} Choose Integration response Choose Create response At response details Method response status code: 204 Choose: Create Choose Test at POST in /{id} id: 1 Request body: Test case Check the new status for POST Method Choose /{id} Choose Enable CORS At CORS interface Choose GET Choose POST Choose Save "
+},
+{
+	"uri": "/6-identity/6.2-users-api/",
+	"title": "List Users in the API",
+	"tags": [],
+	"description": "",
+	"content": " At IAM Interface Choose Create policy Choose JSON Copy policy and paste it { \u0026#34;Version\u0026#34;: \u0026#34;2012-10-17\u0026#34;, \u0026#34;Statement\u0026#34;: [ { \u0026#34;Sid\u0026#34;: \u0026#34;VisualEditor0\u0026#34;, \u0026#34;Effect\u0026#34;: \u0026#34;Allow\u0026#34;, \u0026#34;Action\u0026#34;: \u0026#34;cognito-idp:ListUsers\u0026#34;, \u0026#34;Resource\u0026#34;: \u0026#34;arn:aws:cognito-idp:\u0026lt;your region\u0026gt;:\u0026lt;account id\u0026gt;:userpool/\u0026lt;user pool id\u0026gt;\u0026#34; } ] } 3. Policy name: Lambda-User-Pool-ChatApp 4. Choose Create policy 5. At IAM Interface\nFind Role: Lambda-Role-ChatApp Choose Add permissions Choose Attach policies Find policy: Lambda-User-Pool-ChatApp Choose: Add permissions At IAM Interface Choose Create Role Choose Service: Lambda Choose Next Add permission: Lamda-User-Pool-ChatApp Add permission: AWSLambdaBasicExecutionRole Role-name: Lambda-Cognito Choose Create Role At Lambda function Choose Create function Function name: Chat-User-GET Runtime: Node.js 18.x Using an existing role: Lambda-Cognito Create function Copy this code and paste it import {CognitoIdentityProviderClient, paginateListUsers} from \u0026#39;@aws-sdk/client-cognito-identity-provider\u0026#39;; const cognito = new CognitoIdentityProviderClient({}); export const handler = async function () { const paginator = paginateListUsers({client: cognito}, { UserPoolId: \u0026#39;\u0026lt;user pool id\u0026gt;\u0026#39;, AttributesToGet: [], Filter: \u0026#39;\u0026#39;, Limit: 60 }); let logins = []; for await (const page of paginator) { for (const user of page.Users) { logins.push(user.Username); } } return logins; }; Choose Deploy At ChatPool Check User pool ID Check ARN At API interface Choose Models Choose create model Name: userList Content type: application/json Model schema { \u0026#34;type\u0026#34;:\u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;:\u0026#34;string\u0026#34; } } Choose Create At API interface Choose Create resource Resource path: / Resource name: users Choose Create resource Choose Create Method Method: GET Lambda function Lambda function: Chat-User-GET Choose Create method Choose Create Method request Choose Edit At Response body Content type: application/json Model: userList Choose Test Test Check the results At Users of ChatPool Choose Create user Username: frank Choose Generate password Choose Create user Do the same with brian Username: frank Choose Generate password Choose Create user Test again and see the results At API Gateway interface Choose Deploy API Stages: prod Choose Deploy Copy link of prod stage Check with browser "
+},
+{
+	"uri": "/1-intro-prepare/1.2-setup/",
+	"title": "Setup the website",
+	"tags": [],
+	"description": "",
+	"content": " Access AWS Console Management Locate and choose S3 Choose Create Bucket In the S3 Interface Bucket name: chat-app-lab Untick Block all public access Choose ACLs enabled Tick I acknowledge \u0026hellip; Choose Create bucket After creating the bucket Choose: chat-app-lab Choose Upload Choose Add files With the downloaded folder, go to v1 to copy the original files to S3 Select all then drag and drop Choose Upload Choose all downloaded files Choose Actions Choose Make public using ACL Choose Make public At the S3 interface Choose Properties Scroll down to Static website hosting Select Edit At the static website interface Select enable for static website hosting Hosting type : Host a static website At Index document Fill in: index.html Choose save changes Copy the website output link Access the browser with the copied link "
+},
+{
+	"uri": "/2-static-s3/",
+	"title": "Static Chat Application with S3",
+	"tags": [],
+	"description": "",
+	"content": "Contents Adding static data to the website Accessing static data from javascript "
+},
+{
+	"uri": "/3-api/",
+	"title": "Creating an API",
+	"tags": [],
+	"description": "",
+	"content": "Contents Creating a policy for the Lambda function Code walkthrough of the first Lambda function Running the lambda function with test data Adding an API Gateway trigger to the function Understand and Setup CORS Calling the API from the website "
+},
+{
+	"uri": "/5-break/5.3-export/",
+	"title": "Exporting a JavaScript client and Swagger",
+	"tags": [],
+	"description": "",
+	"content": " At API Interface Choose Deploy API Stage: prod Choose Deploy At stages Choose stage actions Choose generate SDK Platform: Javascript Choose Generate SDK At S3 Bucket Choose Upload Choose Add files Extract file zip of sdk file Choose and drop this folder into ../js/ Grant public-read access Choose I understand Choose Upload At S3 Bucket Choose Upload Choose Add files Go to Site folder in folder v9 Choose all and drop to upload Grant public-read access Choose I understand Choose Upload Test with browser Send new messages Test wit 2nd conversation At Stages of API Choose stage actions\nChoose export Choose Swagger\nChoose YAML\nChoose Export API\nA file yaml will be downloaded Go to google and search Swagger Editor Access this website 10. Copy code in file into Editor\nCan see Any methods of this API Choose Try it out to test API See the results "
+},
+{
+	"uri": "/6-identity/6.3-users-site/",
+	"title": "List Users on the site",
+	"tags": [],
+	"description": "",
+	"content": " At S3 Bucket Choose Upload Choose Add files Go to Site folder in v10 folder Choose All and drop to upload Grant piblic-read-access Choose I understand the risk Choose Upload At Stages of API Choose Actions Choose Generate SDK Platform: Javascript Choose Generate SDK At S3 Bucket Choose Upload Choose Add files Choose sdk file unziped Grant piblic-read-access Choose I understand the risk Choose Upload Choose /users at api gateway Choose Enable CORS Choose GET Choose Save Test with browser again "
+},
+{
+	"uri": "/3-api/3.3-lambda-test/",
+	"title": "Running the lambda function with test data",
+	"tags": [],
+	"description": "",
+	"content": " Choose Test Choose Configure test event Choose Create test event Event name : Get-Data-From-S3 Event JSON: {} Choose Save Run TEST and view the results "
+},
+{
+	"uri": "/4-dynamodb/4.3-update-policy/",
+	"title": "Update Lambda policy to access DynamoDB tables",
+	"tags": [],
+	"description": "",
+	"content": " At the IAM interface At the IAM interface Complete the policy and copy paste the JSON Select Next Click Review and create Policy name: Access-DynamoDB-ChatApp Select Create policy Find and choose Role: Lambda-Role-ChatApp Choose Add permissions Choose Attach policies Tick Policy : Access-DynamoDB-ChatApp Choose Add Permission "
+},
+{
+	"uri": "/3-api/3.4-lambda-api/",
+	"title": "Adding an API Gateway trigger to the function",
+	"tags": [],
+	"description": "",
+	"content": " At the AWS Console interface Choose API Gateway Choose Build at REST API Configure the API Name: Chat-API Type: Edge-optimized Choose Create API At Chat-API interface Choose Create resource At the resource interface Resource name: {proxy+} Choose Create resource Choose ANY under /{proxy+} Choose Edit integration Choose Lambda function Choose the link of the created lambda function: Lambda-ChatApp-Proxy Leave the rest as default and Choose Save Choose Test Choose method: GET Test and see the results are returned Check results "
+},
+{
+	"uri": "/6-identity/6.4-new-conversation/",
+	"title": "Create a new conversation",
+	"tags": [],
+	"description": "",
+	"content": " At Lambda fuction Choose create function Function name: Chat-Conversation-POST Runtime: Node.js 18.x or Node.js 20.x Use an existing role: Lambda-Role-ChatApp Choose Create function Copy code and paste it import { randomUUID } from \u0026#39;node:crypto\u0026#39;; import {BatchWriteItemCommand, DynamoDBClient} from \u0026#39;@aws-sdk/client-dynamodb\u0026#39;; const dynamo = new DynamoDBClient({}); export const handler = async function (event) { const id = randomUUID(); const users = event.users; users.push(event.cognitoUsername); const records = users.map((user) =\u0026gt; { return { PutRequest: { Item: { ConversationId: { S: id }, Username: { S: user } } } }; }); await dynamo.send(new BatchWriteItemCommand({ RequestItems: { \u0026#39;Chat-Conversations\u0026#39;: records } })); return id; }; Choose deploy\nAt API interface Choose Models Choose Create model At model details interface Name: ConversationId Content type: application/json Model schema {\u0026#34;type\u0026#34;: \u0026#34;string\u0026#34;} Choose Create At model details interface Name: NewConversation Content type: application/json Model schema { \u0026#34;type\u0026#34;: \u0026#34;array\u0026#34;, \u0026#34;items\u0026#34;: { \u0026#34;type\u0026#34;: \u0026#34;string\u0026#34; } } Choose Create At API gateway Choose /conversations Choose Create method Choose POST Choose Lambda function Choose Lambda function : Chat-Conversation-POST Choose POST method in /conversations Choose Method request Choose Edit\nAt Request body Content type: application/json Model: NewConversation Choose Save\nChoose POST method in /conversations Choose Method response Choose Edit At Request body Content type: application/json Model: ConversationId Choose Save Choose POST method in /conversations Choose Integration request Choose Edit Content type: application/json Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;Student\u0026#34;, \u0026#34;users\u0026#34;: [ #foreach($elem in $inputRoot) \u0026#34;$elem\u0026#34; #if($foreach.hasNext),#end #end ] } Choose Save\nChoose /conversations Choose Enable CORS Choose GET Choose OPTIONS Choose POST Choose Save At API Gateway Choose Deploy stage prod again And choose generate SDK Platform: Javascript Choose GenerateSDK At S3 Bucket Choose Upload Choose Add files Choose folder sdk unziped and drop to upload\nGrant public-read access Choose I understand Choose Upload At S3 Bucket Choose Upload Choose Add files Go to v11 folder Choose site.js and drop it\nGrant public-read access Choose I understand Choose Upload Test with browser Start a new conversation Test with new messages "
+},
+{
+	"uri": "/4-dynamodb/4.4-read-conversation/",
+	"title": "Read a conversation from Dynamo DB",
+	"tags": [],
+	"description": "",
+	"content": " At the code of lambda function Choose Test Choose Configure test event At Configure test event interface Choose Edit saved event Event JSON: { \u0026#34;pathParameters\u0026#34;:{ \u0026#34;proxy\u0026#34;: \u0026#34;conversations/1\u0026#34; } } Choose Save Choose Test At S3 Bucket Choose Upload Choose Add files Go to v4 Go to site Add file to upload Choose Grant public-read acccess Choose I understand Choose Upload Access browser and test again\nAt API interface Choose Test Method type: GET proxy: conversations Choose Test Chech the results "
+},
+{
+	"uri": "/5-break/5.4-remove/",
+	"title": "Remove hard-coded user names from Lambda",
+	"tags": [],
+	"description": "",
+	"content": " Go to Chat-Conversation-GET lambda function Find: {S: 'Student'} Change it: {S: event.cognitoUsername} Choose Deploy Choose configure test At configure test event Edit saved event Event JSON { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;Student\u0026#34; } Choose Save Check the results Go to Chat-Conversation-POST lambda function Find: {S: 'Student'} Change it: {S: event.cognitoUsername} Choose Deploy At API gateway Choose GET in /conversations Choose Integration request Choose Edit Mapping templates Content type: application/json Template body: { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;Student\u0026#34; } Choose Save At API gateway Choose POST in /{id} Choose Integration request Choose Edit Mapping templates Content type: application/json Template body: { echo \u0026#34;code\u0026#34; \u0026#34;cognitoUsername\u0026#34;: \u0026#34;Student\u0026#34; } 9. At API Interface\nChoose Deploy API Stage: prod Choose Deploy At stages Choose stage actions Choose generate SDK Platform: Javascript Choose Generate SDK At S3 Bucket Choose Upload Choose Add files Extract file zip of sdk file Choose and drop this folder into ../js/ Grant public-read access Choose I understand Choose Upload Test again with browser chat-app remove harded-code "
+},
+{
+	"uri": "/4-dynamodb/",
+	"title": "Use DynamoDB for storage",
+	"tags": [],
+	"description": "",
+	"content": "Contents Create DynamoDB tables Create some sample data in DynamoDB Update Lambda policy to access DynamoDB tables Read a conversation from Dynamo DB Read conversation list from DynamoDB Write new messages to DynamoDB "
+},
+{
+	"uri": "/5-break/",
+	"title": "Break up the monolith – Start build Complete App",
+	"tags": [],
+	"description": "",
+	"content": "Contents Create API structure in API Gateway Lambda functions for reading and writing messages Exporting a JavaScript client and Swagger Remove hard-coded user names from Lambda "
+},
+{
+	"uri": "/6-identity/6.5-sign-up/",
+	"title": "Create sign up page",
+	"tags": [],
+	"description": "",
+	"content": " At User Pool Go to App client and copy ClienID Change information var poolData = { UserPoolId: \u0026#39;us-east-1_bzELdEaCl\u0026#39;, ClientId: \u0026#39;jruh8009fqtifkckptbr494gp\u0026#39; }; Prepare amazon-cognito-identity.js for this project Steps With available file At S3 Bucket Choose Upload Choose Add files Choose amazon-cognito-identity.js and drop it to upload Choose all in folder site in v12 and drop it to upload Grant public-read access Choose I understand Choose Upload Check with browser Access ../signup.html Type necessary information and Choose sign up Check email Check user in Chat-Pool Choose username has just created Choose Actions Choose Confirm account Choose Confirm Check user is confirmed "
+},
+{
+	"uri": "/4-dynamodb/4.5-read-conversation-list/",
+	"title": "Read conversation list from DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": " At S3 Bucket Choose Upload Choose Add files Go to v6 folder Choose site file and add to upload Choose Grant public-read acccess Choose I understand Choose Upload At Lambda function Copy this code and paste it import {DynamoDBClient, paginateQuery, QueryCommand} from \u0026#39;@aws-sdk/client-dynamodb\u0026#39;; const client = new DynamoDBClient({}); export const handler = async function (event) { const path = event.pathParameters.proxy; try { if (path === \u0026#39;conversations\u0026#39;) { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, IndexName: \u0026#39;Username-ConversationId-index\u0026#39;, Select: \u0026#39;ALL_PROJECTED_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;Username = :username\u0026#39;, ExpressionAttributeValues: {\u0026#39;:username\u0026#39;: {S: \u0026#39;Student\u0026#39;}} }); let conversationIds = []; for await (const page of paginator) { for (const item of page.Items) { conversationIds.push(item.ConversationId.S); } } let lastsPromise = loadConvosLast(conversationIds); let partsPromise = loadConvoParticpants(conversationIds); let lasts = await lastsPromise; let parts = await partsPromise; const resultObjs = conversationIds.map((id) =\u0026gt; { return { id: id, last: lasts[id], participants: parts[id] }; }); return done(null, resultObjs); } else if (path.startsWith(\u0026#39;conversations/\u0026#39;)) { const id = path.substring(\u0026#39;conversations/\u0026#39;.length); return done(null, await loadMessages(id)); } else { done(\u0026#39;No cases hit\u0026#39;); } } catch (e) { return done(e); } }; async function loadMessages(id) { let messages = []; const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Messages\u0026#39;, ProjectionExpression: \u0026#39;#T, Sender, Message\u0026#39;, ExpressionAttributeNames: {\u0026#39;#T\u0026#39;: \u0026#39;Timestamp\u0026#39;}, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }); for await (const page of paginator) { for (const message of page.Items) { messages.push({ sender: message.Sender.S, time: Number(message.Timestamp.N), message: message.Message.S }); } } return loadConversationDetail(id, messages); } async function loadConversationDetail(id, messages) { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, Select: \u0026#39;ALL_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }); let participants = []; for await (const page of paginator) { for (const item of page.Items) { participants.push(item.Username.S); } } return { id: id, participants: participants, last: messages.length \u0026gt; 0 ? messages[messages.length - 1].time : undefined, messages: messages } } async function loadConvosLast(ids) { const queryResults = ids.map((id) =\u0026gt; client.send(new QueryCommand({ TableName: \u0026#39;Chat-Messages\u0026#39;, ProjectionExpression: \u0026#39;ConversationId, #T\u0026#39;, Limit: 1, ScanIndexForward: false, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeNames: {\u0026#39;#T\u0026#39;: \u0026#39;Timestamp\u0026#39;}, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }))); let result = new Map; for await (const qr of queryResults) { if (qr.Items.length === 1) { result[qr.Items[0].ConversationId.S] = Number(qr.Items[0].Timestamp.N); } } return result; } async function loadConvoParticpants(ids) { const queryResults = ids.map(async (id) =\u0026gt; { const paginator = paginateQuery({client: client}, { TableName: \u0026#39;Chat-Conversations\u0026#39;, Select: \u0026#39;ALL_ATTRIBUTES\u0026#39;, KeyConditionExpression: \u0026#39;ConversationId = :id\u0026#39;, ExpressionAttributeValues: {\u0026#39;:id\u0026#39;: {S: id}} }); let p = []; for await (const page of paginator) { for (const item of page.Items) { p.push(item.Username.S); } } return { id: id, participants: p }; }); let result = new Map; for await (const qr of queryResults) { result[qr.id] = qr.participants; } return result; } function done(err, res) { if (err) { console.error(err); } return { statusCode: err ? \u0026#39;400\u0026#39; : \u0026#39;200\u0026#39;, body: err ? JSON.stringify(err) : JSON.stringify(res), headers: { \u0026#39;Content-Type\u0026#39;: \u0026#39;application/json\u0026#39;, \u0026#39;Access-Control-Allow-Origin\u0026#39;: \u0026#39;*\u0026#39; } }; } Choose Deploy Choose Test and check results Check again with browser "
+},
+{
+	"uri": "/3-api/3.5-cors/",
+	"title": "Understand and Setup CORS",
+	"tags": [],
+	"description": "",
+	"content": " Choose /{proxy+} Choose Enable CORS At the CORS interface Choose Default 4xx Choose Default 5xx Choose Save "
+},
+{
+	"uri": "/6-identity/",
+	"title": "Add Identity to the application",
+	"tags": [],
+	"description": "",
+	"content": "Contents Create a user pool List Users in the API List Users on the site Create a new conversation Create sign up page Create verification page Add login and logout Add a Cognito authorizer to the API Gateway Results "
+},
+{
+	"uri": "/3-api/3.6-call-api/",
+	"title": "Calling the API from the website",
+	"tags": [],
+	"description": "",
+	"content": " Choose Deploy API At the Deploy API interface Stage: New stage Stage name: prod Choose Deploy Copy Invoke URL Paste the URL into the browser and see the results Paste the URL into the configuration file At the S3 interface Choose Upload Choose add files Choose folder v3 Drag and drop the file to the correct path s3://chat-app-lab/js/ "
+},
+{
+	"uri": "/6-identity/6.6-verify/",
+	"title": "Create verification page",
+	"tags": [],
+	"description": "",
+	"content": " At S3 Bucket Choose Upload Choose Add files Choose all in folder site in v13 and drop it to upload Grant public-read access Choose I understand Choose Upload Check signup again with new username Check Code Check in email Use code in email to signup Check user hoang has just been confirmed "
+},
+{
+	"uri": "/4-dynamodb/4.6-new-mesages/",
+	"title": "Write new messages to DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": " At lambda function Choose configure test event Choose Edit saved event Event JSON { \u0026#34;httpMethod\u0026#34;: \u0026#34;GET\u0026#34;, \u0026#34;pathParameters\u0026#34;: { \u0026#34;proxy\u0026#34;: \u0026#34;conversations/1\u0026#34; } } Choose Save Choose Test and check results Change Event JSON { \u0026#34;httpMethod\u0026#34;: \u0026#34;POST\u0026#34;, \u0026#34;body\u0026#34;: \u0026#34;This is new message\u0026#34;, \u0026#34;pathParameters\u0026#34;: { \u0026#34;proxy\u0026#34;: \u0026#34;conversations/1\u0026#34; } } Choose Save and Test Or Invoke Go to DynamoDB tables and check new item Check again with browser This is new items At S3 Bucket Choose Upload Choose Add files Go to site folder in v7 folder Add all file to upload Choose Grant public-read acccess Choose I understand Choose Upload Check with browser Type new message "
+},
+{
+	"uri": "/6-identity/6.7-login-logout/",
+	"title": "Add login and logout",
+	"tags": [],
+	"description": "",
+	"content": " At S3 Bucket Choose Upload Choose Add files Choose all in folder site in v14 and drop it to upload Grant public-read access Choose I understand Choose Upload Sign in with username : Hoang Start new chat conversation "
+},
+{
+	"uri": "/7-optimization-cdn/",
+	"title": "Optimization Setting up a CloudFront CDN",
+	"tags": [],
+	"description": "",
+	"content": " At AWS Console Choose Cloudfront Choose Create a Cloudfront distribution Choose s3 bucket we have just created Choose Use website endpoint Check and leave default Check and leave default Default root object: index.html Choose Create distribution Copy distribution domain name Wait it deploy success and check with browser Check write function of this web "
+},
+{
+	"uri": "/6-identity/6.8-authorizer/",
+	"title": "Add a Cognito authorizer to the API Gateway",
+	"tags": [],
+	"description": "",
+	"content": " At API Gateway Choose Authorizers Choose Create an authorizer At authorizer interface Authorizer name: Cognito Type: Cognito Cognito user pool: ChatPool Token source: Authorization Choose Create authorizer Check new authorizer At API gateway Choose GET in /conversations Choose Method request Choose Edit Authorization: Cognito At API gateway Choose GET in /conversations Choose Integration request Choose Edit Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;$context.authorizer.claims[\u0026#39;cognito:username\u0026#39;]\u0026#34; } Choose Save Choose Save At API gateway Choose POST in /conversations Choose Method request Choose Edit Authorization: Cognito At API gateway Choose POST in /conversations Choose Integration request Choose Edit Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;$context.authorizer.claims[\u0026#39;cognito:username\u0026#39;]\u0026#34;, \u0026#34;users\u0026#34;: [ #foreach($elem in $inputRoot) \u0026#34;$elem\u0026#34; #if($foreach.hasNext),#end #end ] } Choose Save At API gateway Choose POST in /{id} Choose Method request Choose Edit Authorization: Cognito Choose Save At API gateway Choose POST in /{id} Choose Integration request Choose Edit Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;$context.authorizer.claims[\u0026#39;cognito:username\u0026#39;]\u0026#34;, \u0026#34;id\u0026#34;: \u0026#34;$input.params(\u0026#39;id\u0026#39;)\u0026#34;, \u0026#34;message\u0026#34;: \u0026#34;$inputRoot\u0026#34; } Choose Save At API gateway Choose GET in /{id} Choose Method request Choose Edit Authorization: Cognito Choose Save At API gateway Choose GET in /{id} Choose Integration request Choose Edit Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;$context.authorizer.claims[\u0026#39;cognito:username\u0026#39;]\u0026#34;, \u0026#34;id\u0026#34;: \u0026#34;$input.params(\u0026#39;id\u0026#39;)\u0026#34; } Choose Save At API gateway Choose GET in /users Choose Method request Choose Edit Authorization: Cognito Choose Save At API gateway Choose GET in /users Choose Integration request Choose Edit Template body #set($inputRoot = $input.path(\u0026#39;$\u0026#39;)) { \u0026#34;cognitoUsername\u0026#34;: \u0026#34;$context.authorizer.claims[\u0026#39;cognito:username\u0026#39;]\u0026#34; } Choose Save "
+},
+{
+	"uri": "/8-clear/",
+	"title": "Clear Resources ",
+	"tags": [],
+	"description": "",
+	"content": " At Cloudfront Choose this cloudfront has just created Choose Disable Choose Disable At Cognito Choose ChatPool Choose Delete user pool Tick Deactivate deletion protection Type: ChatPool Choose: Delete At lambda function Choose All lambda function Choose Delete Type: delete Choose Delete At API Gateway Choose API Action Choose delete API Type: confirm Choose Delete At DynamoDB Choose all database Choose Delete Type confirm Choose Delete At DynamoDB Choose all database Choose Delete Type confirm Choose Delete At S3 Choose chat-app-lab bucket Choose Empty Type: permanently delete Choose Empty At S3 Choose chat-app-lab bucket Choose Delete Type: chat-app-lab Choose Delete Bucket At IAM Interface Choose Roles Find: Lambda-Role-ChatApp Find: Lambda-Cognito Choose Delete Type: delete Choose Delete At IAM Interface Choose Policies Find: Chat-S3-Access Type: Chat-S3-Access Choose Delete At IAM Interface Choose Policies Find: Lambda-User-Pool-ChatApp Choose Delete Type: Lambda-User-Pool-ChatApp Choose Delete At IAM Interface Choose Policies Find: Access-DynamoDB-ChatApp Choose Delete Type: Access-DynamoDB-ChatApp Choose Delete "
+},
+{
+	"uri": "/6-identity/6.9-results/",
+	"title": "Results",
+	"tags": [],
+	"description": "",
+	"content": " At API Gateway Choose Action Choose Deploy API Stages: prod Choose Deploy At stages Choose Stage actions Choose Generate SDK Generate SDK Platform: Javascript Choose: Generate SDK At S3 Bucket Choose Upload Choose Add files Choose sdk file unzipped and drop it to upload Grant public-read access Choose I understand Choose Upload At S3 Bucket Choose Upload Choose Add files Choose all file in folder site in folder v15 and drop it to upload Grant public-read access Choose I understand Choose Upload Sign in with user picard Start a new chat Start a new chat with hoang user Test with new messages Access Hoang Account and reply Chat again "
+},
+{
+	"uri": "/categories/",
+	"title": "Categories",
+	"tags": [],
+	"description": "",
+	"content": ""
+},
+{
+	"uri": "/tags/",
+	"title": "Tags",
+	"tags": [],
+	"description": "",
+	"content": ""
+}]

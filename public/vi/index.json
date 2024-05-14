@@ -1,0 +1,281 @@
+[
+{
+	"uri": "/vi/2-static-s3/2.1-add-data/",
+	"title": "Adding static data to the website",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/",
+	"title": "Build a Complete serverless Chat Website",
+	"tags": [],
+	"description": "",
+	"content": "Build a Complete serverless Chat Website Overview In this lab, you will\nContent Introduction and Preparation Static Chat Application with S3 Creating an API Use DynamoDB for storage Break up the monolith – Start build Complete App Add Identity to the application Optimization Setting up a CloudFront CDN Clear Resources "
+},
+{
+	"uri": "/vi/6-identity/6.1-user-pool/",
+	"title": "Create a user pool",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/5-break/5.1-api/",
+	"title": "Create API structure in API Gateway",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.1-tables/",
+	"title": "Create DynamoDB tables",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/3-api/3.1-policy/",
+	"title": "Creating a policy for the Lambda function",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/1-intro-prepare/",
+	"title": "Introduction and Preparation",
+	"tags": [],
+	"description": "",
+	"content": "Diagram for this project Contents Introduction Setup the website "
+},
+{
+	"uri": "/vi/1-intro-prepare/1.1-intro/",
+	"title": "Introdution",
+	"tags": [],
+	"description": "",
+	"content": "\n"
+},
+{
+	"uri": "/vi/2-static-s3/2.2-access-data/",
+	"title": "Accessing static data from javascript",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/3-api/3.2-lambda/",
+	"title": "Code walkthrough of the first Lambda function",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.2-sample-data/",
+	"title": "Create some sample data in DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/5-break/5.2-lambda/",
+	"title": "Lambda functions for reading and writing messages",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.2-users-api/",
+	"title": "List Users in the API",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/1-intro-prepare/1.2-setup/",
+	"title": "Setup the website",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/2-static-s3/",
+	"title": "Static Chat Application with S3",
+	"tags": [],
+	"description": "",
+	"content": "Contents Adding static data to the website Accessing static data from javascript "
+},
+{
+	"uri": "/vi/3-api/",
+	"title": "Creating an API",
+	"tags": [],
+	"description": "",
+	"content": "Contents Creating a policy for the Lambda function Code walkthrough of the first Lambda function Running the lambda function with test data Adding an API Gateway trigger to the function Understand and Setup CORS Calling the API from the website "
+},
+{
+	"uri": "/vi/5-break/5.3-export/",
+	"title": "Exporting a JavaScript client and Swagger",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.3-users-site/",
+	"title": "List Users on the site",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/3-api/3.3-lambda-test/",
+	"title": "Running the lambda function with test data",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.3-update-policy/",
+	"title": "Update Lambda policy to access DynamoDB tables",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/3-api/3.4-lambda-api/",
+	"title": "Adding an API Gateway trigger to the function",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.4-new-conversation/",
+	"title": "Create a new conversation",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.4-read-conversation/",
+	"title": "Read a conversation from Dynamo DB",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/5-break/5.4-remove/",
+	"title": "Remove hard-coded user names from Lambda",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/",
+	"title": "Use DynamoDB for storage",
+	"tags": [],
+	"description": "",
+	"content": "Firewall in VPC In this section, we will learn about the basic security features in Amazon VPC, such as the Security Group firewall feature and Network Access Control Lists.\nContents Create DynamoDB tables Create some sample data in DynamoDB Update Lambda policy to access DynamoDB tables Read a conversation from Dynamo DB Read conversation list from DynamoDB Write new messages to DynamoDB "
+},
+{
+	"uri": "/vi/5-break/",
+	"title": "Break up the monolith – Start build Complete App",
+	"tags": [],
+	"description": "",
+	"content": "Contents Create API structure in API Gateway Lambda functions for reading and writing messages Exporting a JavaScript client and Swagger Remove hard-coded user names from Lambda "
+},
+{
+	"uri": "/vi/6-identity/6.5-sign-up/",
+	"title": "Create sign up page",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.5-read-conversation-list/",
+	"title": "Read conversation list from DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": "\n"
+},
+{
+	"uri": "/vi/3-api/3.5-cors/",
+	"title": "Understand and Setup CORS",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/",
+	"title": "Add Identity to the application",
+	"tags": [],
+	"description": "",
+	"content": "Contents Create a user pool List Users in the API List Users on the site Create a new conversation Create sign up page Create verification page Add login and logout Add a Cognito authorizer to the API Gateway Results "
+},
+{
+	"uri": "/vi/3-api/3.6-call-api/",
+	"title": "Calling the API from the website",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.6-verify/",
+	"title": "Create verification page",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/4-dynamodb/4.6-new-mesages/",
+	"title": "Write new messages to DynamoDB",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.7-login-logout/",
+	"title": "Add login and logout",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/7-optimization-cdn/",
+	"title": "Optimization Setting up a CloudFront CDN",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.8-authorizer/",
+	"title": "Add a Cognito authorizer to the API Gateway",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/8-clear/",
+	"title": "Clear Resources ",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/6-identity/6.9-results/",
+	"title": "Results",
+	"tags": [],
+	"description": "",
+	"content": " "
+},
+{
+	"uri": "/vi/categories/",
+	"title": "Categories",
+	"tags": [],
+	"description": "",
+	"content": ""
+},
+{
+	"uri": "/vi/tags/",
+	"title": "Tags",
+	"tags": [],
+	"description": "",
+	"content": ""
+}]
