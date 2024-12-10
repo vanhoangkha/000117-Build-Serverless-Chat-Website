@@ -4,7 +4,7 @@
     <title>Read a conversation from Dynamo DB on Start with Amazon VPC and AWS VPN Site-to-Site.</title>
     <link>/4-dynamodb/4.4-read-conversation/</link>
     <description>Recent content in Read a conversation from Dynamo DB on Start with Amazon VPC and AWS VPN Site-to-Site.</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en</language>
     <atom:link href="/4-dynamodb/4.4-read-conversation/index.xml" rel="self" type="application/rss+xml" />
   </channel>
