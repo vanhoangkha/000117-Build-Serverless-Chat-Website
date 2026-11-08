@@ -1,4 +1,4 @@
-# 💬 Build Serverless Chat Website
+# Build Serverless Chat Website
 
 Real-time chat application with WebSocket API and Lambda.
 
@@ -8,7 +8,7 @@ This is a hands-on workshop from the **AWS First Cloud Journey** series.
 
 ## Workshop
 
-📖 **[Start the workshop](https://vanhoangkha.github.io/000117-Build-Serverless-Chat-Website/)**
+**[Start the workshop](https://vanhoangkha.github.io/000117-Build-Serverless-Chat-Website/)**
 
 ## Prerequisites
 
